@@ -9,7 +9,7 @@ TEMPLATE_COLUMNS = [
     # Operational
     "IRT", "APT", "ORT", "QMS", "Chat", "Incoming", "P1 Solved", "P2 Solved", "P1 Taken",
     # Customer
-    "nCES", "Surveys",
+    "nCES", "# Top 2 Box Surveys",
     # Innovation
     "KCS Focus", "Pulse", "Release Defects", "Innovation & Supportability",
     # People
@@ -27,8 +27,8 @@ TEMPLATE_MAP = {
     "P1 Solved":        "p1_solved",
     "P2 Solved":        "p2_solved",
     "P1 Taken":         "p1_taken",
-    "nCES":             "nces",
-    "Surveys":          "surveys",
+    "nCES":                  "nces",
+    "# Top 2 Box Surveys":   "surveys",
     "KCS Focus":        "kcs_focus",
     "Pulse":            "pulse",
     "Release Defects":  "release_defects",
