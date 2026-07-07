@@ -1,22 +1,18 @@
 import io
 import sys
-import importlib.util
 import streamlit as st
 import pandas as pd
 from pathlib import Path
 
-# Load kpi_logic directly from goals_app by file path to avoid module name conflicts
-_kpi_logic_path = Path(__file__).parent.parent.parent / "goals_app" / "utils" / "kpi_logic.py"
-_spec = importlib.util.spec_from_file_location("goals_kpi_logic", _kpi_logic_path)
-_kpi_logic = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_kpi_logic)
-
-calculate_operational_goal_rating = _kpi_logic.calculate_operational_goal_rating
-calculate_customer_goal_rating     = _kpi_logic.calculate_customer_goal_rating
-calculate_innovation_goal_rating   = _kpi_logic.calculate_innovation_goal_rating
-calculate_people_goal_rating       = _kpi_logic.calculate_people_goal_rating
-GOAL_RATING_COLORS                 = _kpi_logic.GOAL_RATING_COLORS
-GOAL_RATING_LABELS                 = _kpi_logic.GOAL_RATING_LABELS
+# Import kpi_logic from team_dashboard's own utils copy
+from utils.kpi_logic import (
+    calculate_operational_goal_rating,
+    calculate_customer_goal_rating,
+    calculate_innovation_goal_rating,
+    calculate_people_goal_rating,
+    GOAL_RATING_COLORS,
+    GOAL_RATING_LABELS,
+)
 
 from utils.kpi_mapping import TEMPLATE_MAP
 
