@@ -71,7 +71,7 @@ def show():
     st.download_button(
         label="⬇️ Download KPI Template",
         data=_make_template(),
-        file_name="kpi_template_v2.xlsx",
+        file_name="kpi_template.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 

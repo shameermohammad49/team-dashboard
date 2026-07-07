@@ -74,7 +74,7 @@ OPERATIONAL_KPIS: dict[str, KPIDefinition] = {
         label="P1 Taken",
         unit="",
         direction="higher_is_better",
-        thresholds=[(32, 4), (26, 3), (0, 2)],
+        thresholds=[(32, 4), (20, 3), (0, 2)],
     ),
 }
 
@@ -183,47 +183,50 @@ def calculate_operational_goal_rating(kpi_values: dict) -> int | None:
     if counts[4] == total:
         return 5
 
+    threes = [k for k, r in rated.items() if r == 3]
     twos = [k for k, r in rated.items() if r == 2]
 
+    # Rating 5: 8 fours, 1 three — the three is not ORT or Incoming
+    if counts[4] == 8 and counts[3] == 1 and all(k not in _PROTECTED_FROM_2 for k in threes):
+        return 5
+
+    # Rating 5: 7 fours, 2 threes — neither three is ORT or Incoming
+    if counts[4] == 7 and counts[3] == 2 and all(k not in _PROTECTED_FROM_2 for k in threes):
+        return 5
+
     if counts[1] == 0:
-        # Rating 4: majority 4s, no 2s (rest all 3s)
+        # Rating 4: majority 4s, no 2s
         if counts[4] >= majority and len(twos) == 0 and not incoming_blocks_4:
             return 4
 
-        # Rating 4: majority 4s, exactly one non-protected 2, rest 3s
-        if counts[4] >= majority and len(twos) == 1 and twos[0] not in _PROTECTED_FROM_2 and not incoming_blocks_4:
+        # Rating 4: majority 4s, one or two non-protected 2s
+        if (counts[4] >= majority and len(twos) in [1, 2]
+                and all(k not in _PROTECTED_FROM_2 for k in twos)
+                and not incoming_blocks_4):
             return 4
 
-        # Rating 4: majority 4s, exactly two 2s, both non-protected, rest 3s
-        if counts[4] >= majority and len(twos) == 2 and all(k not in _PROTECTED_FROM_2 for k in twos) and not incoming_blocks_4:
+        # Rating 4: 5 or 6 fours, remaining all rated 3 (no 2s)
+        if counts[4] in [5, 6] and len(twos) == 0 and not incoming_blocks_4:
             return 4
 
-        # Rating 3: majority 4s with any 2s (protected or multiple)
-        if counts[4] >= majority:
+        # Rating 3: majority 4s, ORT or Incoming rated 2
+        if counts[4] >= majority and any(k in _PROTECTED_FROM_2 for k in twos):
             return 3
 
-        # Rating 3: 4 or more 4s but 2s outnumber or equal 4s (not dominant)
-        if counts[4] >= 4 and counts[2] >= counts[4]:
+        # Rating 3: majority 4s, three or more 2s
+        if counts[4] >= majority and len(twos) >= 3:
             return 3
 
-        # Rating 3: exactly 4 fours (not majority), 3s+4s outnumber 2s
-        if counts[4] == 4 and (counts[4] + counts[3]) > counts[2]:
+        # Rating 3: exactly 4 fours and 4 threes
+        if counts[4] == 4 and counts[3] == 4:
             return 3
 
-        # Rating 3: equal count of 4s and 3s
-        if counts[4] == counts[3] and counts[4] > 0:
-            return 3
-
-        # Rating 3: majority 3s
+        # Rating 3: 3s are majority (≥5)
         if counts[3] >= majority:
             return 3
 
-        # Rating 3: 4 or more 3s (significant presence even if not majority)
-        if counts[3] >= 4:
-            return 3
-
-    # Rating 2: 2s are more than any other single rating
-    if counts[2] > counts[4] and counts[2] > counts[3] and counts[2] > counts[1]:
+    # Rating 2: 2s are majority (≥5)
+    if counts[2] >= majority:
         return 2
 
     return 1
