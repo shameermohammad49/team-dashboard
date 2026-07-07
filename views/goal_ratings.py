@@ -40,17 +40,17 @@ def _final_badge(score: float | None) -> str:
     if score is None:
         return "—"
     if score >= 4.5:
-        bg, fg = "#14532d", "#ffffff"   # dark green
-        label = "Outstanding"
+        bg, fg = "#14532d", "#ffffff"
+        label = "Consistently Exceeds Expectations"
     elif score >= 4.0:
-        bg, fg = "#166534", "#dcfce7"   # green
-        label = "Exceeding"
+        bg, fg = "#166534", "#dcfce7"
+        label = "Exceeds Expectations"
     elif score >= 3.0:
-        bg, fg = "#713f12", "#fef9c3"   # yellow/amber
-        label = "Meeting"
+        bg, fg = "#713f12", "#fef9c3"
+        label = "Meets Expectations"
     else:
-        bg, fg = "#7f1d1d", "#fee2e2"   # red
-        label = "Below"
+        bg, fg = "#7f1d1d", "#fee2e2"
+        label = "Does Not Meet Expectations"
     return (
         f'<span style="background:{bg};color:{fg};padding:3px 12px;'
         f'border-radius:20px;font-size:0.85rem;font-weight:700;">'
