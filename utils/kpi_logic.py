@@ -46,26 +46,20 @@ OPERATIONAL_KPIS: dict[str, KPIDefinition] = {
         direction="higher_is_better",
         thresholds=[(97, 4), (95, 3), (0, 2)],
     ),
-    "chat": KPIDefinition(
-        label="Chat",
-        unit="",
+    "infodoc": KPIDefinition(
+        label="Infodoc",
+        unit="%",
         direction="higher_is_better",
-        thresholds=[(28, 4), (22, 3), (0, 2)],
-    ),
-    "incoming": KPIDefinition(
-        label="Incoming",
-        unit="",
-        direction="higher_is_better",
-        thresholds=[(370, 4), (270, 3), (0, 2)],
+        thresholds=[(10, 4), (8, 3), (0, 2)],
     ),
     "p1_solved": KPIDefinition(
-        label="P1 Solved",
+        label="P1 Solved in 5 D",
         unit="%",
         direction="higher_is_better",
         thresholds=[(80, 4), (75, 3), (0, 2)],
     ),
     "p2_solved": KPIDefinition(
-        label="P2 Solved",
+        label="P2 Solved in 14 D",
         unit="%",
         direction="higher_is_better",
         thresholds=[(80, 4), (70, 3), (0, 2)],
@@ -75,6 +69,18 @@ OPERATIONAL_KPIS: dict[str, KPIDefinition] = {
         unit="",
         direction="higher_is_better",
         thresholds=[(32, 4), (20, 3), (0, 2)],
+    ),
+    "incoming": KPIDefinition(
+        label="Total Incoming",
+        unit="",
+        direction="higher_is_better",
+        thresholds=[(370, 4), (270, 3), (0, 2)],
+    ),
+    "chat": KPIDefinition(
+        label="Completed Chats",
+        unit="",
+        direction="higher_is_better",
+        thresholds=[(35, 4), (25, 3), (0, 2)],
     ),
 }
 
@@ -170,7 +176,7 @@ def calculate_operational_goal_rating(kpi_values: dict) -> int | None:
 
     ratings = list(rated.values())
     total = len(ratings)
-    majority = total // 2 + 1  # 5 out of 9
+    majority = total // 2 + 1  # 6 out of 10
 
     counts = {1: 0, 2: 0, 3: 0, 4: 0}
     for r in ratings:
@@ -186,12 +192,12 @@ def calculate_operational_goal_rating(kpi_values: dict) -> int | None:
     threes = [k for k, r in rated.items() if r == 3]
     twos = [k for k, r in rated.items() if r == 2]
 
-    # Rating 5: 8 fours, 1 three — the three is not ORT or Incoming
-    if counts[4] == 8 and counts[3] == 1 and all(k not in _PROTECTED_FROM_2 for k in threes):
+    # Rating 5: 9 fours, 1 three — the three is not ORT or Incoming
+    if counts[4] == 9 and counts[3] == 1 and all(k not in _PROTECTED_FROM_2 for k in threes):
         return 5
 
-    # Rating 5: 7 fours, 2 threes — neither three is ORT or Incoming
-    if counts[4] == 7 and counts[3] == 2 and all(k not in _PROTECTED_FROM_2 for k in threes):
+    # Rating 5: 8 fours, 2 threes — neither three is ORT or Incoming
+    if counts[4] == 8 and counts[3] == 2 and all(k not in _PROTECTED_FROM_2 for k in threes):
         return 5
 
     if counts[1] == 0:
@@ -205,28 +211,44 @@ def calculate_operational_goal_rating(kpi_values: dict) -> int | None:
                 and not incoming_blocks_4):
             return 4
 
-        # Rating 4: 5 or 6 fours, remaining all rated 3 (no 2s)
-        if counts[4] in [5, 6] and len(twos) == 0 and not incoming_blocks_4:
-            return 4
-
         # Rating 3: majority 4s, ORT or Incoming rated 2
         if counts[4] >= majority and any(k in _PROTECTED_FROM_2 for k in twos):
+            return 3
+
+        # Rating 3: majority 4s blocked by Incoming < 330
+        if counts[4] >= majority and incoming_blocks_4:
             return 3
 
         # Rating 3: majority 4s, three or more 2s
         if counts[4] >= majority and len(twos) >= 3:
             return 3
 
-        # Rating 3: exactly 4 fours and 4 threes
-        if counts[4] == 4 and counts[3] == 4:
+        # Rating 3: exactly 5 fours and 5 threes
+        if counts[4] == 5 and counts[3] == 5:
             return 3
 
-        # Rating 3: 3s are majority (≥5)
+        # Rating 3: 5 or more 3s
+        if counts[3] >= 5:
+            return 3
+
+        # Rating 3: equal count of 4s, 3s and 2s
+        if counts[4] == counts[3] == counts[2]:
+            return 3
+
+        # Rating 3: 3s are majority (≥6)
         if counts[3] >= majority:
             return 3
 
-    # Rating 2: 2s are majority (≥5)
+        # Rating 3: 4s+3s together outnumber 2s (catch-all for remaining combinations)
+        if (counts[4] + counts[3]) > counts[2]:
+            return 3
+
+    # Rating 2: 2s are majority (≥6)
     if counts[2] >= majority:
+        return 2
+
+    # Rating 2: 3s+2s outnumber 4s when no majority
+    if (counts[3] + counts[2]) > counts[4] and counts[2] > counts[4]:
         return 2
 
     return 1
@@ -429,7 +451,7 @@ PEOPLE_KPIS: dict[str, KPIDefinition] = {
         label="# Gamification / Know Verse sessions?",
         unit="count",
         direction="higher_is_better",
-        thresholds=[(2, 4), (1, 3), (0, 2)],
+        thresholds=[(3, 4), (2, 3), (1, 2)],
     ),
     "swarms": KPIDefinition(
         label="# R&R nominations & Participation in EE activities",
