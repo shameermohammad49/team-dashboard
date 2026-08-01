@@ -117,7 +117,7 @@ def show():
         row_lower = {str(k).strip().lower(): v for k, v in row.items()}
 
         # All KPI columns that are percentages (should be 0-100 scale)
-        PCT_COLS = {"irt", "apt", "ort", "qms", "nces", "kcs focus", "pulse",
+        PCT_COLS = {"irt", "apt", "ort", "qms", "infodoc", "nces", "kcs focus", "pulse",
                     "p1 solved", "p2 solved"}
 
         def get_val(col):
@@ -133,7 +133,7 @@ def show():
             except (ValueError, TypeError):
                 return None
 
-        op_vals  = {k: get_val(c) for c, k in TEMPLATE_MAP.items() if k in ["irt","apt","ort","qms","chat","incoming","p1_solved","p2_solved","p1_taken"]}
+        op_vals  = {k: get_val(c) for c, k in TEMPLATE_MAP.items() if k in ["irt","apt","ort","qms","infodoc","chat","incoming","p1_solved","p2_solved","p1_taken"]}
         cu_vals  = {k: get_val(c) for c, k in TEMPLATE_MAP.items() if k in ["nces","surveys"]}
         inn_vals = {k: get_val(c) for c, k in TEMPLATE_MAP.items() if k in ["kcs_focus","pulse","release_defects","innovation_supportability"]}
         ppl_vals = {k: get_val(c) for c, k in TEMPLATE_MAP.items() if k in ["expert_area","gamification","swarms"]}
